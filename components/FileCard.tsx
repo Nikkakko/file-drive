@@ -26,6 +26,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -33,6 +34,7 @@ import {
   GanttChart,
   ImageIcon,
   MoreVertical,
+  StarIcon,
   TrashIcon,
 } from "lucide-react";
 import { useMutation } from "convex/react";
@@ -112,6 +114,7 @@ function FileCardActions({ file }: { file: Doc<"files"> }) {
   const [isConfirmingDelete, setIsConfirmingDelete] = React.useState(false);
   const [isPending, startTransition] = React.useTransition();
   const deleteFile = useMutation(api.files.deleteFile);
+  const toggleFavorite = useMutation(api.files.toggleFavorite);
   const { toast } = useToast();
 
   function handleDelete() {
@@ -155,6 +158,18 @@ function FileCardActions({ file }: { file: Doc<"files"> }) {
           <MoreVertical />
         </DropdownMenuTrigger>
         <DropdownMenuContent>
+          <DropdownMenuItem
+            className="flex items-center gap-1  cursor-pointer"
+            onClick={() => {
+              startTransition(async () => {
+                await toggleFavorite({ fileId: file._id });
+              });
+            }}
+          >
+            <StarIcon className="size-4" />
+            Favorite
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
           <DropdownMenuItem
             className="flex items-center gap-1 text-destructive cursor-pointer"
             onClick={() => setIsConfirmingDelete(true)}

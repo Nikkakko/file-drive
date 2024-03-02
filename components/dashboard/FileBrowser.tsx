@@ -42,7 +42,6 @@ export function FileBrowser({
   const organization = useOrganization();
   const user = useUser();
   const searchParams = useSearchParams();
-  const [query, setQuery] = useState("");
   const [type, setType] = useState<Doc<"files">["type"] | "all">("all");
   const s = searchParams.get("s")?.toString();
 
