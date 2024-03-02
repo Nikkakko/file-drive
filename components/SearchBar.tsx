@@ -33,14 +33,14 @@ const SearchBox: React.FC<SearchBoxProps> = ({ ...props }) => {
   return (
     <form
       className={cn(
-        "border border-secondary p-4 flex items-center justify-between rounded-[4px] md:max-w-[641px]  mx-auto shadow-sm",
+        "border border-secondary py-2 px-4 flex items-center justify-between rounded-[4px] md:max-w-[641px]  mx-auto shadow-sm",
         props.className
       )}
     >
       <input
         type="text"
         name="search"
-        placeholder="your file names"
+        placeholder="Search file names..."
         defaultValue={s || ""}
         onChange={e => debouncedOnChange(e.target.value)}
         className="border-none bg-transparent w-full focus:none outline-none
