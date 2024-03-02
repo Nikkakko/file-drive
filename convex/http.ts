@@ -32,6 +32,7 @@ http.route({
             image: result.data.image_url,
           });
           break;
+
         case "user.updated":
           await ctx.runMutation(internal.users.updateUser, {
             tokenIdentifier: `https://${process.env.CLERK_HOSTNAME}|${result.data.id}`,

@@ -1,20 +1,12 @@
-"use client";
-import { Button } from "@/components/ui/button";
-import { api } from "@/convex/_generated/api";
-import { useOrganization, useUser } from "@clerk/nextjs";
-import { useMutation, useQuery } from "convex/react";
+import { UploadButton } from "@/components/UploadFile";
 
-export default function Home() {
-  const organization = useOrganization();
-  const createFile = useMutation(api.files.createFile);
-  const user = useUser();
-
-  let orgId: string | undefined = undefined;
-  if (organization.isLoaded && user.isLoaded) {
-    orgId = organization.organization?.id ?? user.user?.id;
-  }
-
+export default async function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24"></main>
+    <main className="container mx-auto pt-12">
+      <div className="flex items-center justify-between">
+        <h1 className="text-4xl font-bold">Your Files</h1>
+        <UploadButton />
+      </div>
+    </main>
   );
 }

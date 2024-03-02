@@ -16,7 +16,7 @@ const Header: React.FC<HeaderProps> = ({}) => {
         <div>FileDrive</div>
         <div className="flex items-center gap-2">
           <OrganizationSwitcher />
-          <UserButton />
+          <UserButton afterSignOutUrl="/" />
           <SignedOut>
             <SignInButton mode="modal">
               <Button>Sign In</Button>
