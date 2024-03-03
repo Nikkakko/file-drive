@@ -1,19 +1,30 @@
 "use client";
 import { useOrganization, useUser } from "@clerk/nextjs";
 import { useQuery } from "convex/react";
-import SearchBar from "@/components/SearchBar";
 
 import Image from "next/image";
 import { GridIcon, Loader2, RowsIcon, TableIcon } from "lucide-react";
 
 import { useState } from "react";
+import SearchBox from "../SearchBar";
+import { columns } from "./columns";
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 import { Label } from "@/components/ui/label";
 import { UploadButton } from "../UploadFile";
 import { Doc } from "@/convex/_generated/dataModel";
 import { api } from "@/convex/_generated/api";
 import { useSearchParams } from "next/navigation";
-import FileCard from "../FileCard";
+import { FileCard } from "../FileCard";
+import { FileTable } from "./FileTable";
 
 function Placeholder() {
   return (
@@ -41,14 +52,20 @@ export function FileBrowser({
 }) {
   const organization = useOrganization();
   const user = useUser();
-  const searchParams = useSearchParams();
+
   const [type, setType] = useState<Doc<"files">["type"] | "all">("all");
-  const s = searchParams.get("s")?.toString();
+  const searchParams = useSearchParams();
+  const query = searchParams.get("s");
 
   let orgId: string | undefined = undefined;
   if (organization.isLoaded && user.isLoaded) {
     orgId = organization.organization?.id ?? user.user?.id;
   }
+
+  const favorites = useQuery(
+    api.files.getAllFavorites,
+    orgId ? { orgId } : "skip"
+  );
 
   const files = useQuery(
     api.files.getFiles,
@@ -56,7 +73,7 @@ export function FileBrowser({
       ? {
           orgId,
           type: type === "all" ? undefined : type,
-          query: s,
+          query: query ?? undefined,
           favorites: favoritesOnly,
           deletedOnly,
         }
@@ -64,26 +81,75 @@ export function FileBrowser({
   );
   const isLoading = files === undefined;
 
+  const modifiedFiles =
+    files?.map(file => ({
+      ...file,
+      isFavorited: (favorites ?? []).some(
+        favorite => favorite.fileId === file._id
+      ),
+    })) ?? [];
+
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold">{title}</h1>
-        <SearchBar />
+
+        <SearchBox />
+
         <UploadButton />
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        {files?.map(file => (
-          <FileCard key={file._id} file={file} />
-        ))}
-      </div>
+      <Tabs defaultValue="grid">
+        <div className="flex justify-between items-center">
+          <TabsList className="mb-2">
+            <TabsTrigger value="grid" className="flex gap-2 items-center">
+              <GridIcon />
+              Grid
+            </TabsTrigger>
+            <TabsTrigger value="table" className="flex gap-2 items-center">
+              <RowsIcon /> Table
+            </TabsTrigger>
+          </TabsList>
 
-      {isLoading && (
-        <div className="flex flex-col gap-8 w-full items-center mt-24">
-          <Loader2 className="h-32 w-32 animate-spin text-gray-500" />
-          <div className="text-2xl">Loading your files...</div>
+          <div className="flex gap-2 items-center">
+            <Label htmlFor="type-select">Type Filter</Label>
+            <Select
+              value={type}
+              onValueChange={(newType: any) => {
+                setType(newType as any);
+              }}
+            >
+              <SelectTrigger id="type-select" className="w-[180px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="image">Image</SelectItem>
+                <SelectItem value="csv">CSV</SelectItem>
+                <SelectItem value="pdf">PDF</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-      )}
+
+        {isLoading && (
+          <div className="flex flex-col gap-8 w-full items-center mt-24">
+            <Loader2 className="h-32 w-32 animate-spin text-gray-500" />
+            <div className="text-2xl">Loading your files...</div>
+          </div>
+        )}
+
+        <TabsContent value="grid">
+          <div className="grid grid-cols-3 gap-4">
+            {modifiedFiles?.map(file => {
+              return <FileCard key={file._id} file={file} />;
+            })}
+          </div>
+        </TabsContent>
+        <TabsContent value="table">
+          <FileTable columns={columns} data={modifiedFiles} />
+        </TabsContent>
+      </Tabs>
 
       {files?.length === 0 && <Placeholder />}
     </div>
